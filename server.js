@@ -1,0 +1,63 @@
+// Import required packages
+const express = require('express');
+const { Pool } = require('pg'); // PostgreSQL client
+const cors = require('cors'); // To allow your frontend to talk to this backend
+require('dotenv').config(); // To load environment variables from .env file
+
+// --- 1. SET UP EXPRESS APP ---
+const app = express();
+const port = process.env.PORT || 3001; // Use port 3001 by default
+
+// --- 2. MIDDLEWARE ---
+app.use(cors()); // Allow requests from other origins (like your future frontend)
+app.use(express.json()); // Allow the server to understand JSON data in request bodies
+
+// --- 3. DATABASE CONNECTION ---
+// The 'Pool' will manage multiple connections to your database
+const pool = new Pool({
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT || 5432, // Default PostgreSQL port
+});
+
+// Test the database connection
+pool.query('SELECT NOW()', (err, res) => {
+    if (err) {
+        console.error('Error connecting to the database:', err.stack);
+    } else {
+        console.log('Successfully connected to database at:', res.rows[0].now);
+    }
+});
+
+// --- 4. API ROUTES (Your Endpoints) ---
+
+// A simple test route to make sure the server is working
+app.get('/', (req, res) => {
+    res.json({ message: 'Hello from the workout tracker backend!' });
+});
+
+// --- GET all muscle groups ---
+// This is an example of a real API endpoint
+app.get('/api/musclegroups', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM MuscleGroups');
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// TODO:
+// - GET /api/exercises
+// - GET /api/exercises/:muscle_group_id
+// - POST /api/workouts (to create a new workout session)
+// - POST /api/sets (to add a set to a workout)
+
+// --- 5. START THE SERVER ---
+app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
+});
+
