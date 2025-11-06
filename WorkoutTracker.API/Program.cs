@@ -1,13 +1,13 @@
-using  Npgsql;
+// We need to tell our app about the new folder
+using WorkoutTracker.Data.Repositories; 
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Get the connection string from appsettings.Development.json
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// --- This is the ONLY line we need to register our module ---
+// This "registers" our new Repository so the controller can use it.
+builder.Services.AddScoped<MuscleGroupRepository>();
+// --- End of change ---
 
-// This makes the database available to all our controllers
-builder.Services.AddTransient<NpgsqlConnection>(_ => new NpgsqlConnection(connectionString));
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
